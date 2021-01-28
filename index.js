@@ -33,12 +33,47 @@ const text = (text) => {
     }
 }
 
+let currentRootInstance = undefined
+let currentDomRoot = undefined
+let currentContext = undefined
+
+const retrieveContext = () => {
+    return currentContext
+}
+
+const rerender = () => {
+    currentRootInstance = update(currentRootInstance, currentRootInstance.currentElement)
+    const currentRenderedRoot = render(currentRootInstance)
+    paintRoot(currentRenderedRoot, currentDomRoot)
+}
+
+const useState = (initialValue) => {
+    const context = retrieveContext()
+    const hookIndex = context.hookIndex
+    let state = context.state[hookIndex]
+    if (!state) {
+        state = initialValue
+    }
+    const setState = (newValue) => {
+        context.state[hookIndex] = newValue // Imperative
+        rerender()
+    }
+    context.hookIndex++ // Imperative
+    return [state, setState]
+}
+
 const MyCounter = (props) => {
-    let counterText = "Counter value: undefined"
+    const [cnt, setCnt] = useState(0)
+
+    const countUp = () => setCnt(cnt + 1)
+
+    let counterText = `Counter value: ${cnt}`
     let counterNode = div({ style: { 'margin-bottom': '1em' } }, text(counterText))
     const buttonText = "Click me"
     const btn = button(
-        {},
+        {
+            onclick: () => countUp()
+        },
         text(buttonText)
     )
     return (
@@ -76,26 +111,121 @@ const App = (props) => {
     )
 }
 
-const render = (component) => {
-    if (typeof component.type === 'string') {
-        // host component, proceed to children
-        const children = component.props.children
-        let newChildren
-        if (children) {
-            newChildren = children.map(render)
-        } else {
-            newChildren = []
-        }
-        props = Object.assign({}, component.props)
-        props.children = newChildren
-        node = Object.assign({}, component)
-        node.props = props
-        return node
+const createContext = () => {
+    return {
+        state: [],
+        hookIndex: 0
+    }
+}
+
+const createCompositeInstance = (component) => {
+    // Setup context
+    const context = createContext()
+    currentContext = context
+    // Recurse on child
+    const newNode = component.type(component.props)
+    const instantiatedElement = createInstance(newNode)
+    return {
+        currentElement: component,
+        instantiatedElement: instantiatedElement,
+        context: context,
+        type: 'composite'
+    }
+}
+
+const createHostInstance = (component) => {
+    const children = component.props.children
+    let newChildren
+    if (children) {
+        newChildren = children.map(createInstance)
     } else {
-        // composite component, evaluate
-        const newNode = component.type(component.props)
-        // ... and recurse
-        return render(newNode)
+        newChildren = []
+    }
+    return {
+        currentElement: component,
+        instantiatedChildren: newChildren,
+        type: 'host'
+    }
+}
+
+const createInstance = (component) => {
+    if (typeof component.type === 'string') {
+        // host component
+        return createHostInstance(component)
+    } else {
+        // composite component
+        return createCompositeInstance(component)
+    }
+}
+
+const renderHost = (instance) => {
+    const children = instance.instantiatedChildren.map(render)
+    const component = instance.currentElement
+    const props = Object.assign({}, component.props)
+    delete props.children
+    return {
+        type: component.type,
+        props: props,
+        children: children
+    }
+}
+
+const render = (instance) => {
+    if (instance.type === 'host') {
+        return renderHost(instance)
+    } else if (instance.type === 'composite') {
+        return render(instance.instantiatedElement)
+    }
+}
+
+const updateCompositeInstance = (instance, next) => {
+    // Setup context
+    currentContext = instance.context
+    currentContext.hookIndex = 0
+    // Recurse on child
+    const prevInstance = instance.instantiatedElement
+    const nextElement = next.type(next.props)
+    const updatedInstance = update(prevInstance, nextElement)
+    return {
+        ...instance,
+        currentElement: next,
+        instantiatedElement: updatedInstance
+    }
+}
+
+// Basically the same as createHostInstance
+const updateHostInstance = (instance, next) => {
+    const children = next.props.children || []
+    const oldInstances = instance.instantiatedChildren
+    let newChildren = []
+    // The "diffing" part. Compare by position and type.
+    for (let i = 0; i < children.length; i++) {
+        if (i > oldInstances.length) {
+            // No more child in the same position -> create new
+            newChildren.push(createInstance(children[i]))
+        } else {
+            newChildren.push(update(oldInstances[i], children[i]))
+        }
+    }
+    return {
+        currentElement: next,
+        instantiatedChildren: newChildren,
+        type: 'host'
+    }
+}
+
+const update = (instance, next) => {
+    // Figure out whether we should update or create a new instance
+    const isUpdate = instance.currentElement.type === next.type
+    if (!isUpdate) {
+        return createInstance(next)
+    }
+    if (typeof next.type === 'string') {
+        // host component
+        return updateHostInstance(instance, next)
+    } else {
+        // composite component
+        return updateCompositeInstance(instance, next)
     }
 }
 
@@ -125,7 +255,7 @@ const paint = (node, domRoot) => {
         domNode = createDomNode(node)
     }
     domRoot.appendChild(domNode)
-    const children = node.props.children
+    const children = node.children
     if (children) {
         for (child of children) {
             paint(child, domNode)
@@ -133,11 +263,23 @@ const paint = (node, domRoot) => {
     }
 }
 
+const paintRoot = (node, domRoot) => {
+    domRoot.innerHTML = ''
+    paint(node, domRoot)
+}
+
 const app = comp(
     App,
     {}
 )
 
-const vDom = render(app)
+const renderAppToDOM = (node, rootElement) => {
+    currentDomRoot = rootElement
+    currentRootInstance = createInstance(node)
+    const currentRenderedRoot = render(currentRootInstance)
+    paintRoot(currentRenderedRoot, rootElement)
+    console.log(currentRootInstance)
+    console.log(currentRenderedRoot)
+}
 
-paint(vDom, rootElement)
+renderAppToDOM(app, rootElement)
