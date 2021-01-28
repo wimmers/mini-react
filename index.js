@@ -20,6 +20,9 @@ const genNode = (type) => (props, ...children) => {
 }
 
 const h1 = genNode('h1')
+const h2 = genNode('h2')
+const h3 = genNode('h3')
+const h4 = genNode('h4')
 const div = genNode('div')
 const span = genNode('span')
 const button = genNode('button')
@@ -88,25 +91,50 @@ const MyCounter = (props) => {
 const App = (props) => {
     const greetingText = "Hi, I am a child!"
     const greeting = text(greetingText)
+    // Invariant: numCounters should always be non-negative
+    const [numCounters, setNumCounters] = useState(1)
+    const addCounterBtn = button(
+        {
+            onclick: () => setNumCounters(numCounters + 1)
+        },
+        text("Add counter!")
+    )
+    const removeCounterBtn = button(
+        {
+            onclick: () => setNumCounters(numCounters - 1)
+        },
+        text("Remove counter!")
+    )
+    const counter = {
+        type: MyCounter,
+        props: {}
+    }
+    let counters = []
+    for (let i = 0; i < numCounters; i++) {
+        counters.push(counter)
+    }
+    const counterElement = div(
+        {},
+        ...counters
+    )
+    const children = [
+        {
+            type: "h2",
+            props: {
+                children: [
+                    greeting
+                ]
+            }
+        },
+        addCounterBtn,
+        removeCounterBtn,
+        h3({}, text("Counters")),
+        counterElement
+    ]
     return (
         {
             type: 'div',
-            props: {
-                children: [
-                    {
-                        type: "h2",
-                        props: {
-                            children: [
-                                greeting
-                            ]
-                        }
-                    },
-                    {
-                        type: MyCounter,
-                        props: {}
-                    }
-                ]
-            }
+            props: { children }
         }
     )
 }
@@ -200,7 +228,7 @@ const updateHostInstance = (instance, next) => {
     let newChildren = []
     // The "diffing" part. Compare by position and type.
     for (let i = 0; i < children.length; i++) {
-        if (i > oldInstances.length) {
+        if (i >= oldInstances.length) {
             // No more child in the same position -> create new
             newChildren.push(createInstance(children[i]))
         } else {
