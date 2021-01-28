@@ -141,7 +141,7 @@ const App = (props) => {
             }
         },
         controls,
-        h3({}, text("Counters")),
+        h3({ className: "mt-2" }, text("Counters")),
         counterElement
     ]
     return (
