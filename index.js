@@ -81,7 +81,7 @@ const MyCounter = (props) => {
     )
     return (
         div(
-            {},
+            { style: { display: 'inline-block', 'margin-left': '1em' } },
             counterNode,
             btn
         )
@@ -114,7 +114,7 @@ const App = (props) => {
         counters.push(counter)
     }
     const counterElement = div(
-        {},
+        { style: { width: '100%' } },
         ...counters
     )
     const children = [
@@ -306,8 +306,6 @@ const renderAppToDOM = (node, rootElement) => {
     currentRootInstance = createInstance(node)
     const currentRenderedRoot = render(currentRootInstance)
     paintRoot(currentRenderedRoot, rootElement)
-    console.log(currentRootInstance)
-    console.log(currentRenderedRoot)
 }
 
 renderAppToDOM(app, rootElement)
