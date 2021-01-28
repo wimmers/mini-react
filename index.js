@@ -1,12 +1,6 @@
 const rootElementName = "#container"
 const rootElement = document.getElementById(rootElementName)
 
-const header = document.createElement('h1')
-const header_text = document.createTextNode("Hey!")
-
-header.appendChild(header_text)
-rootElement.appendChild(header)
-
 const comp = (type, props, ...children) => {
     props.children = children
     return {
@@ -54,7 +48,7 @@ const useState = (initialValue) => {
     const context = retrieveContext()
     const hookIndex = context.hookIndex
     let state = context.state[hookIndex]
-    if (!state) {
+    if (state === undefined) {
         state = initialValue
     }
     const setState = (newValue) => {
@@ -63,93 +57,6 @@ const useState = (initialValue) => {
     }
     context.hookIndex++ // Imperative
     return [state, setState]
-}
-
-const MyCounter = (props) => {
-    const [cnt, setCnt] = useState(0)
-
-    const countUp = () => setCnt(cnt + 1)
-
-    let counterText = `Counter value: ${cnt}`
-    let counterNode = div({ style: { 'margin-bottom': '1em' } }, text(counterText))
-    const buttonText = "Click me"
-    const btn = button(
-        {
-            onclick: () => countUp(),
-            className: 'btn btn-primary'
-        },
-        text(buttonText)
-    )
-    return (
-        div(
-            { style: { display: 'inline-block', 'margin-left': '1em' } },
-            counterNode,
-            btn
-        )
-    )
-}
-
-const row = (...children) => {
-    return div(
-        { className: "row" },
-        ...children
-    )
-}
-
-const App = (props) => {
-    const greetingText = "Hi, I am a child!"
-    const greeting = text(greetingText)
-    // Invariant: numCounters should always be non-negative
-    const [numCounters, setNumCounters] = useState(1)
-    const addCounterBtn = button(
-        {
-            onclick: () => setNumCounters(numCounters + 1),
-            className: "btn btn-success mx-1"
-        },
-        text("Add counter")
-    )
-    const removeCounterBtn = button(
-        {
-            onclick: () => setNumCounters(numCounters - 1),
-            className: "btn btn-danger mx-1"
-        },
-        text("Remove counter")
-    )
-    const controls = div({},
-        addCounterBtn,
-        removeCounterBtn
-    )
-    const counter = {
-        type: MyCounter,
-        props: {}
-    }
-    let counters = []
-    for (let i = 0; i < numCounters; i++) {
-        counters.push(counter)
-    }
-    const counterElement = div(
-        { style: { width: '100%' } },
-        ...counters
-    )
-    const children = [
-        {
-            type: "h2",
-            props: {
-                children: [
-                    greeting
-                ]
-            }
-        },
-        controls,
-        h3({ className: "mt-2" }, text("Counters")),
-        counterElement
-    ]
-    return (
-        {
-            type: 'div',
-            props: { children }
-        }
-    )
 }
 
 const createContext = () => {
@@ -309,16 +216,103 @@ const paintRoot = (node, domRoot) => {
     paint(node, domRoot)
 }
 
-const app = comp(
-    App,
-    {}
-)
-
 const renderAppToDOM = (node, rootElement) => {
     currentDomRoot = rootElement
     currentRootInstance = createInstance(node)
     const currentRenderedRoot = render(currentRootInstance)
     paintRoot(currentRenderedRoot, rootElement)
 }
+
+const MyCounter = (props) => {
+    const [cnt, setCnt] = useState(0)
+
+    const countUp = () => setCnt(cnt + 1)
+
+    let counterText = `Counter value: ${cnt}`
+    let counterNode = div({ style: { 'margin-bottom': '1em' } }, text(counterText))
+    const buttonText = "Click me"
+    const btn = button(
+        {
+            onclick: () => countUp(),
+            className: 'btn btn-primary'
+        },
+        text(buttonText)
+    )
+    return (
+        div(
+            { style: { display: 'inline-block', 'margin-left': '1em' } },
+            counterNode,
+            btn
+        )
+    )
+}
+
+const row = (...children) => {
+    return div(
+        { className: "row" },
+        ...children
+    )
+}
+
+const App = (props) => {
+    const greetingText = "Hi, I am a child!"
+    const greeting = text(greetingText)
+    // Invariant: numCounters should always be non-negative
+    const [numCounters, setNumCounters] = useState(1)
+    const addCounterBtn = button(
+        {
+            onclick: () => setNumCounters(numCounters + 1),
+            className: "btn btn-success mx-1"
+        },
+        text("Add counter")
+    )
+    const removeCounterBtn = button(
+        {
+            onclick: () => setNumCounters(numCounters - 1),
+            className: "btn btn-danger mx-1"
+        },
+        text("Remove counter")
+    )
+    const controls = div({},
+        addCounterBtn,
+        removeCounterBtn
+    )
+    const counter = {
+        type: MyCounter,
+        props: {}
+    }
+    let counters = []
+    for (let i = 0; i < numCounters; i++) {
+        counters.push(counter)
+    }
+    const counterElement = div(
+        { style: { width: '100%' } },
+        ...counters
+    )
+    const children = [
+        {
+            type: "h2",
+            props: {
+                children: [
+                    greeting
+                ]
+            }
+        },
+        controls,
+        h3({ className: "mt-2" }, text("Counters")),
+        counterElement
+    ]
+    return (
+        {
+            type: 'div',
+            props: { children }
+        }
+    )
+}
+
+const app = comp(
+    App,
+    {}
+)
 
 renderAppToDOM(app, rootElement)
