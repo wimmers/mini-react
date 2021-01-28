@@ -75,7 +75,8 @@ const MyCounter = (props) => {
     const buttonText = "Click me"
     const btn = button(
         {
-            onclick: () => countUp()
+            onclick: () => countUp(),
+            className: 'btn btn-primary'
         },
         text(buttonText)
     )
@@ -88,6 +89,13 @@ const MyCounter = (props) => {
     )
 }
 
+const row = (...children) => {
+    return div(
+        { className: "row" },
+        ...children
+    )
+}
+
 const App = (props) => {
     const greetingText = "Hi, I am a child!"
     const greeting = text(greetingText)
@@ -95,15 +103,21 @@ const App = (props) => {
     const [numCounters, setNumCounters] = useState(1)
     const addCounterBtn = button(
         {
-            onclick: () => setNumCounters(numCounters + 1)
+            onclick: () => setNumCounters(numCounters + 1),
+            className: "btn btn-success mx-1"
         },
-        text("Add counter!")
+        text("Add counter")
     )
     const removeCounterBtn = button(
         {
-            onclick: () => setNumCounters(numCounters - 1)
+            onclick: () => setNumCounters(numCounters - 1),
+            className: "btn btn-danger mx-1"
         },
-        text("Remove counter!")
+        text("Remove counter")
+    )
+    const controls = div({},
+        addCounterBtn,
+        removeCounterBtn
     )
     const counter = {
         type: MyCounter,
@@ -126,8 +140,7 @@ const App = (props) => {
                 ]
             }
         },
-        addCounterBtn,
-        removeCounterBtn,
+        controls,
         h3({}, text("Counters")),
         counterElement
     ]
