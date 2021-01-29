@@ -1,7 +1,35 @@
 // import './MyReact.js';
 
-const rootElementName = "#container"
-const rootElement = document.getElementById(rootElementName)
+const MyCounter = (props) => {
+    const [cnt, setCnt] = useState(0)
+
+    const countUp = () => setCnt(cnt + 1)
+
+    let counterText = `Counter value: ${cnt}`
+    let counterNode = div({ style: { 'margin-bottom': '1em' } }, text(counterText))
+    const buttonText = "Click me"
+    const btn = button(
+        {
+            onclick: () => countUp(),
+            className: 'btn btn-primary'
+        },
+        text(buttonText)
+    )
+    return (
+        div(
+            { style: { display: 'inline-block', 'margin-left': '1em' } },
+            counterNode,
+            btn
+        )
+    )
+}
+
+const row = (...children) => {
+    return div(
+        { className: "row" },
+        ...children
+    )
+}
 
 const App = (props) => {
     const greetingText = "Hi, I am a child!"
@@ -63,5 +91,8 @@ const app = comp(
     App,
     {}
 )
+
+const rootElementName = "#container"
+const rootElement = document.getElementById(rootElementName)
 
 renderAppToDOM(app, rootElement)
