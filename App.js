@@ -1,5 +1,5 @@
 import { useState } from './MyReact.js';
-import { button, div, text, h3, comp } from './Util.js';
+import { button, div, text, h2, h3, comp } from './Util.js';
 
 const MyCounter = (props) => {
     const [cnt, setCnt] = useState(0)
@@ -56,10 +56,10 @@ const App = (props) => {
         addCounterBtn,
         removeCounterBtn
     )
-    const counter = {
-        type: MyCounter,
-        props: {}
-    }
+    const counter = comp(
+        MyCounter,
+        {}
+    )
     let counters = []
     for (let i = 0; i < numCounters; i++) {
         counters.push(counter)
@@ -69,24 +69,12 @@ const App = (props) => {
         ...counters
     )
     const children = [
-        {
-            type: "h2",
-            props: {
-                children: [
-                    greeting
-                ]
-            }
-        },
+        h2({}, greeting),
         controls,
         h3({ className: "mt-2" }, text("Counters")),
         counterElement
     ]
-    return (
-        {
-            type: 'div',
-            props: { children }
-        }
-    )
+    return div({}, ...children)
 }
 
 export const app = comp(
