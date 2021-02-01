@@ -6,8 +6,8 @@ const createTextNode = (node) => {
 }
 
 const createDomNode = (node) => {
-    domNode = document.createElement(node.type)
-    for (key in node.props) {
+    const domNode = document.createElement(node.type)
+    for (const key in node.props) {
         if (key === 'children') {
             continue
         } else if (key === 'style') {
@@ -29,7 +29,7 @@ const paint = (node, domRoot) => {
     domRoot.appendChild(domNode)
     const children = node.children
     if (children) {
-        for (child of children) {
+        for (const child of children) {
             paint(child, domNode)
         }
     }
@@ -41,7 +41,6 @@ const paintRoot = (node, domRoot) => {
 }
 
 export const render = (node, rootElement) => {
-    currentDomRoot = rootElement
     const painter = (currentRenderedRoot) => paintRoot(currentRenderedRoot, rootElement)
     renderRoot(node, painter)
 }
