@@ -1,3 +1,4 @@
+import { renderRoot } from './MyReact.js';
 // The code to actually drawing to the DOM. The "renderer" in React speak.
 
 const createTextNode = (node) => {
@@ -39,9 +40,8 @@ const paintRoot = (node, domRoot) => {
     paint(node, domRoot)
 }
 
-const renderAppToDOM = (node, rootElement) => {
+export const render = (node, rootElement) => {
     currentDomRoot = rootElement
-    currentRootInstance = createInstance(node)
-    const currentRenderedRoot = render(currentRootInstance)
-    paintRoot(currentRenderedRoot, rootElement)
+    const painter = (currentRenderedRoot) => paintRoot(currentRenderedRoot, rootElement)
+    renderRoot(node, painter)
 }

@@ -1,6 +1,6 @@
 // Utilities for creating components.
 
-const comp = (type, props, ...children) => {
+export const comp = (type, props, ...children) => {
     props.children = children
     return {
         type: type,
@@ -12,15 +12,15 @@ const genNode = (type) => (props, ...children) => {
     return comp(type, props, ...children)
 }
 
-const h1 = genNode('h1')
-const h2 = genNode('h2')
-const h3 = genNode('h3')
-const h4 = genNode('h4')
-const div = genNode('div')
-const span = genNode('span')
-const button = genNode('button')
+export const h1 = genNode('h1')
+export const h2 = genNode('h2')
+export const h3 = genNode('h3')
+export const h4 = genNode('h4')
+export const div = genNode('div')
+export const span = genNode('span')
+export const button = genNode('button')
 
-const text = (text) => {
+export const text = (text) => {
     return {
         type: 'text',
         props: {

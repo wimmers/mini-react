@@ -1,5 +1,5 @@
 let currentRootInstance = undefined
-let currentDomRoot = undefined
+let rootPainter = undefined
 let currentContext = undefined
 
 const retrieveContext = () => {
@@ -9,10 +9,10 @@ const retrieveContext = () => {
 const rerender = () => {
     currentRootInstance = update(currentRootInstance, currentRootInstance.currentElement)
     const currentRenderedRoot = render(currentRootInstance)
-    paintRoot(currentRenderedRoot, currentDomRoot)
+    rootPainter(currentRenderedRoot)
 }
 
-const useState = (initialValue) => {
+export const useState = (initialValue) => {
     const context = retrieveContext()
     const hookIndex = context.hookIndex
     let state = context.state[hookIndex]
@@ -64,7 +64,7 @@ const createHostInstance = (component) => {
     }
 }
 
-const createInstance = (component) => {
+export const createInstance = (component) => {
     if (typeof component.type === 'string') {
         // host component
         return createHostInstance(component)
@@ -86,7 +86,7 @@ const renderHost = (instance) => {
     }
 }
 
-const render = (instance) => {
+export const render = (instance) => {
     if (instance.type === 'host') {
         return renderHost(instance)
     } else if (instance.type === 'composite') {
@@ -143,4 +143,10 @@ const update = (instance, next) => {
         // composite component
         return updateCompositeInstance(instance, next)
     }
+}
+
+export const renderRoot = (node, paintRoot) => {
+    rootPainter = paintRoot
+    currentRootInstance = createInstance(node)
+    rootPainter(render(currentRootInstance))
 }
